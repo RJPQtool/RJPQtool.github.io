@@ -5,7 +5,9 @@
         flex-direction: column;
         align-items: center;
     }
-    
+     button:focus {
+        transform: scale(1.2); /* Scale the button to make it bigger */
+    }
     .platform {
         width: 60px;
         height: 60px;
