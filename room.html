@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RJPQ tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="./css/main.css">
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.0/firebase-database.js"></script>
+</head>
+<body>
+    
+    <h1 id="roomCodeDisplay">Rood code :</h1>
+    <div class="buttons">
+        <button class="color-button color-0" onclick="setColor(0)">101</button>
+        <button class="color-button color-1" onclick="setColor(1)">102</button>
+        <button class="color-button color-2" onclick="setColor(2)">102</button>
+        <button class="color-button color-3" onclick="setColor(3)">104</button>
+        <button class="btn btn-danger" onclick="resetPlatforms()">Reset</button>
+    </div>
+
+    <div id="platforms"></div>
+    
+    
+    <script>
+        // 初始化 Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYkcN426bIDFlEofyCTRxzan3LMWYeFNI",
+            authDomain: "rjpq-fe002.firebaseapp.com",
+            databaseURL: "https://rjpq-fe002-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "rjpq-fe002",
+            storageBucket: "rjpq-fe002.firebasestorage.app",
+            messagingSenderId: "868775161256",
+            appId: "1:868775161256:web:491e9bd442d7385ffd019d",
+            measurementId: "G-SP30MZSH28"
+        };
+        
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // 解析 URL 參數中的房間代碼
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomCode = urlParams.get("code");
+        
+        if (!roomCode) {
+            alert("Invald Room Code");
+            window.location.href = `./`;
+        }
+        document.getElementById('roomCodeDisplay').textContent = `Room Code: ${roomCode}`;
+
+        
+        let roomData = [];
+        let selectedColor = -1;  // 用戶選擇的顏色
+        
+        // 根據房間代碼從 Firebase 獲取數據
+        const roomRef = database.ref('rooms/' + roomCode);
+        
+        roomRef.on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                roomData = snapshot.val();
+            } else {
+                // 若 Firebase 沒有資料，創建一個全是 0 的預設字串
+                roomData = Array(40).fill(4);
+                roomRef.set(roomData);  // 儲存預設資料到 Firebase
+            }
+            renderPlatforms();
+        });
+        
+        // 渲染平台
+        function renderPlatforms() {
+            const platformsContainer = document.getElementById("platforms");
+            platformsContainer.innerHTML = "";  // 清空現有平台
+            
+            for (let row = 0; row < 10; row++) {
+                const rowDiv = document.createElement("div");
+                rowDiv.className = "platforms-row";
+                for (let col = 0; col < 4; col++) {
+                    const index = row * 4 + col;
+                    const platform = document.createElement("div");
+                    platform.className = "platform";
+                    platform.style.backgroundColor = getColor(roomData[index]);
+                    platform.dataset.index = index; // 記錄平台索引
+                    platform.addEventListener('click', onPlatformClick);
+                    rowDiv.appendChild(platform);
+                }
+                platformsContainer.appendChild(rowDiv);
+            }
+        }
+        
+        // 根據數字選擇顏色
+        function getColor(num) {
+            switch (num) {
+                case 0: return "#FF0000";
+                case 1: return "green";
+                case 2: return "#0000FF";
+                case 3: return "#2d2789";
+                default: return "gray";
+            }
+        }
+        
+        // 設置選擇的顏色
+        function setColor(colorIndex) {
+            selectedColor = colorIndex;
+        }
+        
+        // 當點擊平台時
+        function onPlatformClick(event) {
+            if (selectedColor === -1) {
+                alert("Choose position first");
+                return;
+            }
+            
+            const platform = event.target;
+            const index = parseInt(platform.dataset.index);
+            
+            
+            // 取消顏色
+            
+            if ( roomData[index]===selectedColor){
+
+                platform.style.backgroundColor=getColor(4);
+                roomData[index]=4;
+            }
+            else{
+
+                platform.style.backgroundColor = getColor(selectedColor);
+                
+                roomData[index] = selectedColor;
+            }
+            // 更新 Firebase 資料
+            
+            roomRef.set(roomData);
+            
+            
+        }
+        function resetPlatforms() {
+            if (window.confirm("Reset all platform?")) {
+                // 重設所有平台數字為 4
+                roomData = Array(40).fill(4);
+                roomRef.set(roomData);  // 更新 Firebase 資料
+
+                // 重新渲染平台
+                renderPlatforms();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+     /* 簡單的樣式設置 */
+     body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .platform {
+        width: 60px;
+        height: 60px;
+        margin: 5px;
+        display: inline-block;
+        border: 1px solid #000;
+        cursor: pointer;
+    }
+    
+    .platforms-row {
+        display: flex;
+    }
+    
+    .buttons {
+        margin-top: 20px;
+    }
+    
+    .color-button {
+        width: 60px;
+        height: 60px;
+        border: none;
+        cursor: pointer;
+        margin: 10px;
+    }
+    
+    /* 顏色樣式 */
+    .color-0 { background-color: #FF0000; }
+    .color-1 { background-color: green; }
+    .color-2 { background-color: #0000FF; }
+    .color-3 { background-color: #2d2789; }

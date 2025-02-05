@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create or Enter Room</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="./css/main.css">
+
+    <script>
+        // 生成隨機不重複的房間代碼
+        function generateRoomCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                code += characters[randomIndex];
+            }
+            return code;
+        }
+
+        // 創建房間的功能
+        function createRoom() {
+            const roomCode = generateRoomCode();
+            // 跳轉到 room 頁面，並帶上生成的代碼
+            window.location.href = `./room?code=${roomCode}`;
+        }
+
+        // 進入房間的功能
+        function joinRoom() {
+            const roomCode = document.getElementById('roomCodeInput').value;
+            // 確保輸入不為空
+            if (roomCode.trim() !== '') {
+                window.location.href = `./room?code=${roomCode}`;
+            } else {
+                alert('請輸入房間代碼');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>RJPQ tool</h1>
+    <div>
+        <button onclick="createRoom()">Create Room</button>
+    </div>
+    
+    <div>
+        <input type="text" id="roomCodeInput" placeholder="Input Room Code">
+        <button onclick="joinRoom()">Enter Room</button>
+    </div>
+</body>
+</html>
