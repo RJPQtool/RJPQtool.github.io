@@ -76,11 +76,16 @@
             
             for (let row = 0; row < 10; row++) {
                 const rowDiv = document.createElement("div");
+                const rowNum = document.createElement("p");
+                rowNum.className="platform";
+                rowNum.innerText=10-row;
+                rowDiv.appendChild(rowNum);
                 rowDiv.className = "platforms-row";
                 for (let col = 0; col < 4; col++) {
                     const index = row * 4 + col;
                     const platform = document.createElement("div");
                     platform.className = "platform";
+                    platform.innerText=col+1;
                     platform.style.backgroundColor = getColor(roomData[index]);
                     platform.dataset.index = index; // 記錄平台索引
                     platform.addEventListener('click', onPlatformClick);
