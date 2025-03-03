@@ -1,5 +1,5 @@
 
-[網址](https://rjpqtool.github.io/RJPQtool/)
+[網址](https://rjpqtool.github.io/)
 <!--
 **RJPQtool/RJPQtool** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
