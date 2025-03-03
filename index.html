@@ -1,205 +1,53 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RJPQ tool</title>
+    <title>Create or Enter Room</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-
     <link rel="stylesheet" href="./css/main.css">
 
-    <script src="https://www.gstatic.com/firebasejs/8.6.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.0/firebase-database.js"></script>
+    <script>
+        // 生成隨機不重複的房間代碼
+        function generateRoomCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                code += characters[randomIndex];
+            }
+            return code;
+        }
+
+        // 創建房間的功能
+        function createRoom() {
+            const roomCode = generateRoomCode();
+            // 跳轉到 room 頁面，並帶上生成的代碼
+            window.location.href = `./room?code=${roomCode}`;
+        }
+
+        // 進入房間的功能
+        function joinRoom() {
+            const roomCode = document.getElementById('roomCodeInput').value;
+            // 確保輸入不為空
+            if (roomCode.trim() !== '') {
+                window.location.href = `./room?code=${roomCode}`;
+            } else {
+                alert('請輸入房間代碼');
+            }
+        }
+    </script>
 </head>
 <body>
-    <div class="container mt-1">
-        <div class="row">
-            <!-- Left side: two elements stacked vertically (each taking 6 columns for a total of 12) -->
-            <div class="col-md-2 " >
-                <div class="p-2  d-flex">Room Code :</div>
-                <div class="p-2  d-flex " id="roomCodeDisplay">
-                </div>
-            </div>
-            <div class="col-md-10 d-flex">
-                <div class="p-2" id="path">
-                    ????? ?????
-                </div>
-            </div>
-        </div>
-   
-    <div class="btn-group" role="group" >
-        <button class="color-button color-0" id="btn1" onclick="setColor(0)">101</button>
-        <button class="color-button color-1" id="btn2" onclick="setColor(1)">102</button>
-        <button class="color-button color-2" id="btn3" onclick="setColor(2)">102</button>
-        <button class="color-button color-3" id="btn4" onclick="setColor(3)">104</button>
+    <h1>RJPQ tool</h1>
+    <div>
+        <button onclick="createRoom()">Create Room</button>
     </div>
-    <button class="btn btn-danger" onclick="resetPlatforms()">Reset</button>
-
-    <div id="platforms"></div>
     
-    
-    <script>
-     
-        // 初始化 Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDYkcN426bIDFlEofyCTRxzan3LMWYeFNI",
-            authDomain: "rjpq-fe002.firebaseapp.com",
-            databaseURL: "https://rjpq-fe002-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "rjpq-fe002",
-            storageBucket: "rjpq-fe002.firebasestorage.app",
-            messagingSenderId: "868775161256",
-            appId: "1:868775161256:web:491e9bd442d7385ffd019d",
-            measurementId: "G-SP30MZSH28"
-        };
-        
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        
-        // 解析 URL 參數中的房間代碼
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomCode = urlParams.get("code");
-        
-        if (!roomCode) {
-            alert("Invald Room Code");
-            window.location.href = `./`;
-        }
-        document.getElementById('roomCodeDisplay').textContent = `${roomCode}`;
-
-        
-        let roomData = [];
-        let selectedColor = -1;  // 用戶選擇的顏色
-        
-        // 根據房間代碼從 Firebase 獲取數據
-        const roomRef = database.ref('rooms/' + roomCode);
-        
-        roomRef.on('value', (snapshot) => {
-            if (snapshot.exists()) {
-                roomData = snapshot.val();
-            } else {
-                // 若 Firebase 沒有資料，創建一個全是 0 的預設字串
-                roomData = Array(40).fill(4);
-                roomRef.set(roomData);  // 儲存預設資料到 Firebase
-            }
-            renderPlatforms();
-        });
-        
-        // 渲染平台
-        function renderPlatforms() {
-            const platformsContainer = document.getElementById("platforms");
-            platformsContainer.innerHTML = "";  // 清空現有平台
-            
-            for (let row = 0; row < 10; row++) {
-                const rowDiv = document.createElement("div");
-                const rowNum = document.createElement("p");
-                rowNum.className="platform";
-                rowNum.innerText=10-row;
-                rowDiv.appendChild(rowNum);
-                rowDiv.className = "platforms-row";
-                for (let col = 0; col < 4; col++) {
-                    const index = row * 4 + col;
-                    const platform = document.createElement("div");
-                    platform.className = "platform";
-                    platform.innerText=col+1;
-                    platform.style.backgroundColor = getColor(roomData[index]);
-                    platform.dataset.index = index; // 記錄平台索引
-                    platform.addEventListener('click', onPlatformClick);
-                    rowDiv.appendChild(platform);
-                }
-                platformsContainer.appendChild(rowDiv);
-            }
-            renderPath();
-        }
-        function renderPath(){
-            let path = new Array(10).fill("?");
-            let indexes = [];
-            for (let i =0;i<40;i++){
-                if (roomData[i]==selectedColor){
-                    path[Math.floor(i/4)]=(i%4+1);
-                }
-            }
-
-            path.splice(5, 0, " "); // Insert white space at index 5
-            document.getElementById("path").innerText=path.reverse().join("");
-        } 
-        // 根據數字選擇顏色
-        function getColor(num) {
-            switch (num) {
-                case 0: return "#FF0000";
-                case 1: return "green";
-                case 2: return "#0000FF";
-                case 3: return "#2d2789";
-                default: return "gray";
-            }
-        }
-        
-        // 設置選擇的顏色
-        function setColor(colorIndex) {
-            selectedColor = colorIndex;
-        }
-        
-        // 當點擊平台時
-        function onPlatformClick(event) {
-            if (selectedColor === -1) {
-                alert("Choose position first");
-                return;
-            }
-            
-            const platform = event.target;
-            const index = parseInt(platform.dataset.index);
-            
-            
-            // 取消顏色
-            
-            if ( roomData[index]===selectedColor){
-                platform.style.backgroundColor=getColor(4);
-                roomData[index]=4;
-                database.ref('rooms/' + roomCode+"/"+index).set(4);
-                return;
-            }
-
-
-            if (roomData[index]!=4 && !window.confirm("Override Other's Platform?"))
-                return;
-
-            platform.style.backgroundColor = getColor(selectedColor);
-                
-            roomData[index] = selectedColor;
-
-            // 更新 Firebase 資料
-            database.ref('rooms/' + roomCode+"/"+index).set(selectedColor);
-            
-            // 清空 同一列
-            let startPlatform= Math.floor(index/4)*4;
-            for (let i=startPlatform;i<=startPlatform+3;i++){
-                if (i!=index && roomData[i]==selectedColor){
-                    platform.style.backgroundColor=getColor(4);
-                    roomData[index]=4;
-                    database.ref('rooms/' + roomCode+"/"+i).set(4);
-                }
-            }
-            return ;
-
-            
-        }
-        function resetPlatforms() {
-            if (window.confirm("Reset all platform?")) {
-                // 重設所有平台數字為 4
-                roomData = Array(40).fill(4);
-                roomRef.set(roomData);  // 更新 Firebase 資料
-
-                // 重新渲染平台
-                renderPlatforms();
-            }
-        }
-
-    </script>
-    <script>
-        // 使用 JavaScript 控制按鈕組的多選一功能
-        $('#btn1, #btn2, #btn3, #btn4').on('click', function () {
-            $('#btn1, #btn2, #btn3, #btn4').removeClass('active'); // 移除所有按鈕的 active 樣式
-            $(this).addClass('active'); // 為當前點擊的按鈕添加 active 樣式
-        });
-    </script>
+    <div>
+        <input type="text" id="roomCodeInput" placeholder="Input Room Code">
+        <button onclick="joinRoom()">Enter Room</button>
+    </div>
 </body>
 </html>
